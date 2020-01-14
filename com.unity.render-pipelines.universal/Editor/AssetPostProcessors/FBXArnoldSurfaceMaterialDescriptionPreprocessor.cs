@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -10,8 +10,7 @@ public class FBXArnoldSurfaceMaterialDescriptionPreprocessor : AssetPostprocesso
 {
     static readonly uint k_Version = 2;
     static readonly int k_Order = 4;
-
-    private static readonly string shaderPath = "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Arnold/ArnoldStandardSurface.shadergraph";
+    static readonly string shaderPath = "Packages/com.unity.render-pipelines.universal/Runtime/Materials/ArnoldStandardSurface.shadergraph";
     public override uint GetVersion()
     {
         return k_Version;
@@ -72,19 +71,19 @@ public class FBXArnoldSurfaceMaterialDescriptionPreprocessor : AssetPostprocesso
         description.TryGetProperty("opacity", out opacityColor);
         bool hasOpacityMap = description.TryGetProperty("opacity", out opacityMap);
         opacity = Mathf.Min(Mathf.Min(opacityColor.x, opacityColor.y), opacityColor.z);
-        
+
         if (opacity < 1.0f || hasOpacityMap)
         {
             if (hasOpacityMap)
             {
-                material.SetTexture("_OPACITY_MAP",opacityMap.texture);
+                material.SetTexture("_OPACITY_MAP", opacityMap.texture);
                 material.SetFloat("_OPACITY", 1.0f);
             }
             else
             {
                 material.SetFloat("_OPACITY", opacity);
             }
-            
+
             material.SetInt("_SrcBlend", 1);
             material.SetInt("_DstBlend", 10);
             //material.SetInt("_ZWrite", 1);
@@ -137,7 +136,7 @@ public class FBXArnoldSurfaceMaterialDescriptionPreprocessor : AssetPostprocesso
         remapPropertyFloatOrTexture(description, material, "specularAnisotropy", "_SPECULAR_ANISOTROPY");
 
         remapPropertyTexture(description, material, "normalCamera", "_NORMAL_MAP");
-        
+
         remapPropertyFloat(description, material, "coat", "_COAT_WEIGHT");
         remapPropertyColorOrTexture(description, material, "coatColor", "_COAT_COLOR");
         remapPropertyFloatOrTexture(description, material, "coatRoughness", "_COAT_ROUGHNESS");
@@ -145,9 +144,9 @@ public class FBXArnoldSurfaceMaterialDescriptionPreprocessor : AssetPostprocesso
         remapPropertyTexture(description, material, "coatNormal", "_COAT_NORMAL");
     }
 
-   
 
-    void CreateFrom3DsMaxArnoldStandardSurfaceMaterial(MaterialDescription description, Material material, AnimationClip[] clips)
+
+    static void CreateFrom3DsMaxArnoldStandardSurfaceMaterial(MaterialDescription description, Material material, AnimationClip[] clips)
     {
         float floatProperty;
         Vector4 vectorProperty;
@@ -184,22 +183,17 @@ public class FBXArnoldSurfaceMaterialDescriptionPreprocessor : AssetPostprocesso
                 material.SetFloat("_OPACITY", opacity);
             }
 
+            shader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/ArnoldStandardSurfaceTransparent.shadergraph");
             material.SetInt("_SrcBlend", 1);
             material.SetInt("_DstBlend", 10);
-            //material.SetInt("_ZWrite", 1);
             material.EnableKeyword("_ALPHAPREMULTIPLY_ON");
             material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-            material.EnableKeyword("_BLENDMODE_PRESERVE_SPECULAR_LIGHTING");
-            material.EnableKeyword("_ENABLE_FOG_ON_TRANSPARENT");
             material.EnableKeyword("_BLENDMODE_ALPHA");
             material.renderQueue = 3000;
         }
         else
         {
-            material.EnableKeyword("_DOUBLESIDED_ON");
-            material.SetInt("_CullMode", 0);
-            material.SetInt("_CullModeForward", 0);
-            material.doubleSidedGI = true;
+            
         }
 
         description.TryGetProperty("base", out floatProperty);
@@ -233,15 +227,9 @@ public class FBXArnoldSurfaceMaterialDescriptionPreprocessor : AssetPostprocesso
         remapPropertyColorOrTexture3DsMax(description, material, "specular_color", "_SPECULAR_COLOR", specularFactor);
         remapPropertyFloatOrTexture3DsMax(description, material, "specular_roughness", "_SPECULAR_ROUGHNESS");
         remapPropertyFloatOrTexture3DsMax(description, material, "specular_ior", "_SPECULAR_IOR");
-        remapPropertyFloatOrTexture3DsMax(description, material, "specular_anisotropy", "_SPECULAR_ANISOTROPY");
 
         remapPropertyTexture(description, material, "normal_camera", "_NORMAL_MAP");
 
-        remapPropertyFloat(description, material, "coat", "_COAT_WEIGHT");
-        remapPropertyColorOrTexture3DsMax(description, material, "coat_color", "_COAT_COLOR");
-        remapPropertyFloatOrTexture3DsMax(description, material, "coat_roughness", "_COAT_ROUGHNESS");
-        remapPropertyFloatOrTexture3DsMax(description, material, "coat_ior", "_COAT_IOR");
-        remapPropertyTexture(description, material, "coat_normal", "_COAT_NORMAL");
     }
 
     static void SetMaterialTextureProperty(string propertyName, Material material, TexturePropertyDescription textureProperty)
@@ -267,7 +255,7 @@ public class FBXArnoldSurfaceMaterialDescriptionPreprocessor : AssetPostprocesso
         }
     }
 
-    static void remapPropertyColorOrTexture3DsMax(MaterialDescription description, Material material, string inPropName, string outPropName,float multiplier = 1.0f)
+    static void remapPropertyColorOrTexture3DsMax(MaterialDescription description, Material material, string inPropName, string outPropName, float multiplier = 1.0f)
     {
         if (description.TryGetProperty(inPropName + ".shader", out TexturePropertyDescription textureProperty))
         {
@@ -295,7 +283,7 @@ public class FBXArnoldSurfaceMaterialDescriptionPreprocessor : AssetPostprocesso
         }
     }
 
-    static void remapPropertyColorOrTexture(MaterialDescription description, Material material, string inPropName, string outPropName,float multiplier = 1.0f)
+    static void remapPropertyColorOrTexture(MaterialDescription description, Material material, string inPropName, string outPropName, float multiplier = 1.0f)
     {
         if (description.TryGetProperty(inPropName, out TexturePropertyDescription textureProperty))
         {
