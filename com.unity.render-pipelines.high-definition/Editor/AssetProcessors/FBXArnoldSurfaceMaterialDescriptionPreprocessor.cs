@@ -126,7 +126,6 @@ namespace UnityEditor.Rendering.HighDefinition
                     vectorProperty.x = Mathf.LinearToGammaSpace(vectorProperty.x);
                     vectorProperty.y = Mathf.LinearToGammaSpace(vectorProperty.y);
                     vectorProperty.z = Mathf.LinearToGammaSpace(vectorProperty.z);
-                    vectorProperty *= floatProperty;
                 }
                 material.SetColor("_BASE_COLOR", vectorProperty * floatProperty);
             }
@@ -144,6 +143,7 @@ namespace UnityEditor.Rendering.HighDefinition
             remapPropertyFloatOrTexture(description, material, "specularRoughness", "_SPECULAR_ROUGHNESS");
             remapPropertyFloatOrTexture(description, material, "specularIOR", "_SPECULAR_IOR");
             remapPropertyFloatOrTexture(description, material, "specularAnisotropy", "_SPECULAR_ANISOTROPY");
+            remapPropertyFloatOrTexture(description, material, "specularRotation", "_SPECULAR_ROTATION");
 
             remapPropertyTexture(description, material, "normalCamera", "_NORMAL_MAP");
             
