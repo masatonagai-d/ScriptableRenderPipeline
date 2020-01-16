@@ -138,7 +138,7 @@ namespace UnityEditor.Rendering.HighDefinition
             remapPropertyFloatOrTexture(description, material, "metalness", "_METALNESS");
 
             description.TryGetProperty("specular", out floatProperty);
-
+            
             remapPropertyColorOrTexture(description, material, "specularColor", "_SPECULAR_COLOR", floatProperty);
             remapPropertyFloatOrTexture(description, material, "specularRoughness", "_SPECULAR_ROUGHNESS");
             remapPropertyFloatOrTexture(description, material, "specularIOR", "_SPECULAR_IOR");
@@ -243,6 +243,7 @@ namespace UnityEditor.Rendering.HighDefinition
             remapPropertyFloatOrTexture3DsMax(description, material, "specular_roughness", "_SPECULAR_ROUGHNESS");
             remapPropertyFloatOrTexture3DsMax(description, material, "specular_ior", "_SPECULAR_IOR");
             remapPropertyFloatOrTexture3DsMax(description, material, "specular_anisotropy", "_SPECULAR_ANISOTROPY");
+            remapPropertyFloatOrTexture(description, material, "specular_rotation", "_SPECULAR_ROTATION");
 
             remapPropertyTexture(description, material, "normal_camera", "_NORMAL_MAP");
 
