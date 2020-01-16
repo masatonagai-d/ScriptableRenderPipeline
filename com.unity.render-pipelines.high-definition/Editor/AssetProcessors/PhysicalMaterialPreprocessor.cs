@@ -1,12 +1,21 @@
 using UnityEditor.AssetImporters;
+using UnityEditor.Experimental;
 using UnityEngine;
 
 namespace UnityEditor.Rendering.HighDefinition
 {
     public class PhysicalMaterialPreprocessor : AssetPostprocessor
     {
-        static readonly uint k_Version = 3;
+        [InitializeOnLoadMethod]
+        static void ImportOnFileChange()
+        {
+            AssetDatabaseExperimental.RegisterCustomDependency("PhysicalMaterialPreprocessor", Hash128.Compute(k_UsedByVersion.ToString()));
+        }
+
+        static readonly uint k_UsedByVersion = 1;
+        static readonly uint k_Version = 1;
         static readonly int k_Order = 4;
+        static readonly string k_ShaderPath = "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/PhysicalMaterial/PhysicalMaterial.ShaderGraph";
 
         public override uint GetVersion()
         {
@@ -27,8 +36,7 @@ namespace UnityEditor.Rendering.HighDefinition
             return classIdA == 1030429932 && classIdB == -559038463;
         }
 
-        public void OnPreprocessMaterialDescription(MaterialDescription description, Material material,
-            AnimationClip[] clips)
+        public void OnPreprocessMaterialDescription(MaterialDescription description, Material material, AnimationClip[] clips)
         {
             if (Is3DsMaxPhysicalMaterial(description))
             {
@@ -42,9 +50,9 @@ namespace UnityEditor.Rendering.HighDefinition
             Vector4 vectorProperty;
             TexturePropertyDescription textureProperty;
 
-            Shader shader;
-            shader = AssetDatabase.LoadAssetAtPath<Shader>(
-                "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/PhysicalMaterial/PhysicalMaterial.ShaderGraph");
+            context.DependsOnCustomDependency("PhysicalMaterialPreprocessor");
+            context.DependsOnSourceAsset(k_ShaderPath);
+            var shader = AssetDatabase.LoadAssetAtPath<Shader>(k_ShaderPath);
             if (shader == null)
                 return;
 
@@ -54,20 +62,20 @@ namespace UnityEditor.Rendering.HighDefinition
                 clip.ClearCurves();
             }
 
-            description.TryGetProperty("transparency", out float transparency);
+            description.TryGetProperty("transparency", out floatProperty);
             bool hasTransparencyMap =
-                description.TryGetProperty("transparency_map", out TexturePropertyDescription transparencyMap);
+                description.TryGetProperty("transparency_map", out textureProperty);
 
-            if (transparency > 0.0f || hasTransparencyMap)
+            if (floatProperty > 0.0f || hasTransparencyMap)
             {
                 if (hasTransparencyMap)
                 {
-                    material.SetTexture("_TRANSPARENCY_MAP", transparencyMap.texture);
-                    material.SetFloat("_TRANSPARENCY", 1);
+                    material.SetTexture("_TRANSPARENCY_MAP", textureProperty.texture);
+                    material.SetFloat("_TRANSPARENCY", 1.0f);
                 }
                 else
                 {
-                    material.SetFloat("_TRANSPARENCY", transparency);
+                    material.SetFloat("_TRANSPARENCY", floatProperty);
                 }
 
                 material.SetInt("_SrcBlend", 1);
@@ -88,12 +96,10 @@ namespace UnityEditor.Rendering.HighDefinition
                 material.doubleSidedGI = true;
             }
 
-            description.TryGetProperty("base_weight", out floatProperty);
-
+            RemapPropertyFloat(description, material, "base_weight", "_BASE_COLOR_WEIGHT");
             if (description.TryGetProperty("base_color_map", out textureProperty))
             {
                 SetMaterialTextureProperty("_BASE_COLOR_MAP", material, textureProperty);
-                material.SetColor("_BASE_COLOR", Color.white * floatProperty);
             }
             else if (description.TryGetProperty("base_color", out vectorProperty))
             {
@@ -102,33 +108,32 @@ namespace UnityEditor.Rendering.HighDefinition
                     vectorProperty.x = Mathf.LinearToGammaSpace(vectorProperty.x);
                     vectorProperty.y = Mathf.LinearToGammaSpace(vectorProperty.y);
                     vectorProperty.z = Mathf.LinearToGammaSpace(vectorProperty.z);
-                    vectorProperty *= floatProperty;
+                    vectorProperty.w = Mathf.LinearToGammaSpace(vectorProperty.w);
                 }
-
-                material.SetColor("_BASE_COLOR", vectorProperty * floatProperty);
+                material.SetColor("_BASE_COLOR", vectorProperty);
             }
 
-            if (description.TryGetProperty("emission", out floatProperty) && floatProperty > 0.0f)
-            {
-                remapPropertyColorOrTexture3DsMax(description, material, "emit_color", "_EMISSION_COLOR",
-                    floatProperty);
-            }
+            RemapPropertyFloat(description, material, "reflectivity", "_REFLECTIONS_WEIGHT");
+            RemapPropertyTextureOrColor(description, material, "refl_color", "_REFLECTIONS_COLOR");
+            RemapPropertyTextureOrFloat(description, material, "metalness", "_METALNESS");
+            RemapPropertyTextureOrFloat(description, material, "roughness", "_REFLECTIONS_ROUGHNESS");
+            RemapPropertyTextureOrFloat(description, material, "trans_ior", "_REFLECTIONS_IOR");
+            RemapPropertyFloat(description, material, "emission", "_EMISSION_WEIGHT");
+            RemapPropertyTextureOrColor(description, material, "emit_color", "_EMISSION_COLOR");
             // emit_luminance
             // emit_kelvin
 
-            remapPropertyFloatOrTexture3DsMax(description, material, "metalness", "_METALNESS");
-            remapPropertyColorOrTexture3DsMax(description, material, "refl_color", "_SPECULAR_COLOR");
-            remapPropertyFloatOrTexture3DsMax(description, material, "roughness", "_SPECULAR_ROUGHNESS");
-            remapPropertyFloatOrTexture3DsMax(description, material, "reflectivity", "_SPECULAR_IOR");
-            remapPropertyFloatOrTexture3DsMax(description, material, "anisotropy", "_SPECULAR_ANISOTROPY");
+            RemapPropertyTextureOrFloat(description, material, "anisotropy", "_ANISOTROPY");
+            // anisoangle
 
-            remapPropertyTexture(description, material, "bump_map", "_NORMAL_MAP");
+            RemapPropertyFloat(description, material, "bump_map_amt", "_BUMP_MAP_STRENGTH");
+            RemapPropertyTexture(description, material, "bump_map", "_BUMP_MAP");
 
-            remapPropertyFloat(description, material, "coating", "_COAT_WEIGHT");
-            remapPropertyColorOrTexture3DsMax(description, material, "coat_color", "_COAT_COLOR");
-            remapPropertyFloatOrTexture3DsMax(description, material, "coat_roughness", "_COAT_ROUGHNESS");
-            remapPropertyFloatOrTexture3DsMax(description, material, "coat_ior", "_COAT_IOR");
-            remapPropertyTexture(description, material, "coat_bump_map", "_COAT_NORMAL");
+            // remapPropertyFloat(description, material, "coating", "_COAT_WEIGHT");
+            // remapPropertyColorOrTexture3DsMax(description, material, "coat_color", "_COAT_COLOR");
+            // remapPropertyFloatOrTexture3DsMax(description, material, "coat_roughness", "_COAT_ROUGHNESS");
+            // remapPropertyFloatOrTexture3DsMax(description, material, "coat_ior", "_COAT_IOR");
+            // remapPropertyTexture(description, material, "coat_bump_map", "_COAT_NORMAL");
             // coat_roughness_inv
             // coat_affect_color
             // coat_affect_roughness
@@ -142,7 +147,7 @@ namespace UnityEditor.Rendering.HighDefinition
             material.SetTextureScale(propertyName, textureProperty.scale);
         }
 
-        static void remapPropertyFloat(MaterialDescription description, Material material, string inPropName,
+        static void RemapPropertyFloat(MaterialDescription description, Material material, string inPropName,
             string outPropName)
         {
             if (description.TryGetProperty(inPropName, out float floatProperty))
@@ -151,7 +156,7 @@ namespace UnityEditor.Rendering.HighDefinition
             }
         }
 
-        static void remapPropertyTexture(MaterialDescription description, Material material, string inPropName,
+        static void RemapPropertyTexture(MaterialDescription description, Material material, string inPropName,
             string outPropName)
         {
             if (description.TryGetProperty(inPropName, out TexturePropertyDescription textureProperty))
@@ -160,22 +165,20 @@ namespace UnityEditor.Rendering.HighDefinition
             }
         }
 
-        static void remapPropertyColorOrTexture3DsMax(MaterialDescription description, Material material,
-            string inPropName, string outPropName, float multiplier = 1.0f)
+        static void RemapPropertyTextureOrColor(MaterialDescription description, Material material,
+            string inPropName, string outPropName)
         {
             if (description.TryGetProperty(inPropName + "_map", out TexturePropertyDescription textureProperty))
             {
                 material.SetTexture(outPropName + "_MAP", textureProperty.texture);
-                material.SetColor(outPropName, Color.white * multiplier);
             }
-            else
+            else if(description.TryGetProperty(inPropName, out Vector4 color))
             {
-                description.TryGetProperty(inPropName, out Vector4 vectorProperty);
-                material.SetColor(outPropName, vectorProperty * multiplier);
+                material.SetColor(outPropName, color);
             }
         }
 
-        static void remapPropertyFloatOrTexture3DsMax(MaterialDescription description, Material material,
+        static void RemapPropertyTextureOrFloat(MaterialDescription description, Material material,
             string inPropName, string outPropName)
         {
             if (description.TryGetProperty(inPropName + "_map", out TexturePropertyDescription textureProperty))
@@ -183,9 +186,8 @@ namespace UnityEditor.Rendering.HighDefinition
                 material.SetTexture(outPropName + "_MAP", textureProperty.texture);
                 material.SetFloat(outPropName, 1.0f);
             }
-            else
+            else if(description.TryGetProperty(inPropName, out float floatProperty))
             {
-                description.TryGetProperty(inPropName, out float floatProperty);
                 material.SetFloat(outPropName, floatProperty);
             }
         }
