@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace UnityEditor.Rendering.HighDefinition
 {
-    public class PhysicalMaterialPreprocessor : AssetPostprocessor
+    public class PhysicalMaterial3DsMaxPreprocessor : AssetPostprocessor
     {
         [InitializeOnLoadMethod]
         static void ImportOnFileChange()
@@ -15,7 +15,7 @@ namespace UnityEditor.Rendering.HighDefinition
         static readonly uint k_UsedByVersion = 1;
         static readonly uint k_Version = 1;
         static readonly int k_Order = 4;
-        static readonly string k_ShaderPath = "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/PhysicalMaterial/PhysicalMaterial.ShaderGraph";
+        static readonly string k_ShaderPath = "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/PhysicalMaterial3DsMax/PhysicalMaterial3DsMax.ShaderGraph";
 
         public override uint GetVersion()
         {
@@ -51,7 +51,7 @@ namespace UnityEditor.Rendering.HighDefinition
             TexturePropertyDescription textureProperty;
 
             context.DependsOnCustomDependency("PhysicalMaterialPreprocessor");
-            context.DependsOnSourceAsset(k_ShaderPath);
+            context.DependsOnImportedAsset(k_ShaderPath);
             var shader = AssetDatabase.LoadAssetAtPath<Shader>(k_ShaderPath);
             if (shader == null)
                 return;
@@ -80,7 +80,6 @@ namespace UnityEditor.Rendering.HighDefinition
 
                 material.SetInt("_SrcBlend", 1);
                 material.SetInt("_DstBlend", 10);
-                //material.SetInt("_ZWrite", 1);
                 material.EnableKeyword("_ALPHAPREMULTIPLY_ON");
                 material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
                 material.EnableKeyword("_BLENDMODE_PRESERVE_SPECULAR_LIGHTING");
@@ -120,23 +119,11 @@ namespace UnityEditor.Rendering.HighDefinition
             RemapPropertyTextureOrFloat(description, material, "trans_ior", "_REFLECTIONS_IOR");
             RemapPropertyFloat(description, material, "emission", "_EMISSION_WEIGHT");
             RemapPropertyTextureOrColor(description, material, "emit_color", "_EMISSION_COLOR");
-            // emit_luminance
-            // emit_kelvin
 
             RemapPropertyTextureOrFloat(description, material, "anisotropy", "_ANISOTROPY");
-            // anisoangle
 
             RemapPropertyFloat(description, material, "bump_map_amt", "_BUMP_MAP_STRENGTH");
             RemapPropertyTexture(description, material, "bump_map", "_BUMP_MAP");
-
-            // remapPropertyFloat(description, material, "coating", "_COAT_WEIGHT");
-            // remapPropertyColorOrTexture3DsMax(description, material, "coat_color", "_COAT_COLOR");
-            // remapPropertyFloatOrTexture3DsMax(description, material, "coat_roughness", "_COAT_ROUGHNESS");
-            // remapPropertyFloatOrTexture3DsMax(description, material, "coat_ior", "_COAT_IOR");
-            // remapPropertyTexture(description, material, "coat_bump_map", "_COAT_NORMAL");
-            // coat_roughness_inv
-            // coat_affect_color
-            // coat_affect_roughness
         }
 
         static void SetMaterialTextureProperty(string propertyName, Material material,
@@ -171,6 +158,7 @@ namespace UnityEditor.Rendering.HighDefinition
             if (description.TryGetProperty(inPropName + "_map", out TexturePropertyDescription textureProperty))
             {
                 material.SetTexture(outPropName + "_MAP", textureProperty.texture);
+                material.SetColor(outPropName, Color.white);
             }
             else if(description.TryGetProperty(inPropName, out Vector4 color))
             {

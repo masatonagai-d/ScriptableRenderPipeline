@@ -12,8 +12,8 @@ namespace UnityEditor.Rendering.HighDefinition
     {
         static readonly uint k_Version = 2;
         static readonly int k_Order = 4;
+        static readonly string k_ShaderPath = "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Arnold/ArnoldStandardSurface.shadergraph";
 
-        private static readonly string shaderPath = "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Arnold/ArnoldStandardSurface.shadergraph";
         public override uint GetVersion()
         {
             return k_Version;
@@ -56,8 +56,8 @@ namespace UnityEditor.Rendering.HighDefinition
             Vector4 vectorProperty;
             TexturePropertyDescription textureProperty;
 
-            Shader shader;
-            shader = AssetDatabase.LoadAssetAtPath<Shader>(shaderPath);
+            Shader shader = AssetDatabase.LoadAssetAtPath<Shader>(k_ShaderPath);
+            context.DependsOnImportedAsset(k_ShaderPath);
             if (shader == null)
                 return;
 
@@ -96,7 +96,6 @@ namespace UnityEditor.Rendering.HighDefinition
                 
                 material.SetInt("_SrcBlend", 1);
                 material.SetInt("_DstBlend", 10);
-                //material.SetInt("_ZWrite", 1);
                 material.EnableKeyword("_ALPHAPREMULTIPLY_ON");
                 material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
                 material.EnableKeyword("_BLENDMODE_PRESERVE_SPECULAR_LIGHTING");
@@ -137,9 +136,9 @@ namespace UnityEditor.Rendering.HighDefinition
 
             remapPropertyFloatOrTexture(description, material, "metalness", "_METALNESS");
 
-            description.TryGetProperty("specular", out floatProperty);
-            
-            remapPropertyColorOrTexture(description, material, "specularColor", "_SPECULAR_COLOR", floatProperty);
+            remapPropertyFloat(description, material, "specular", "_SPECULAR_WEIGHT");
+
+            remapPropertyColorOrTexture(description, material, "specularColor", "_SPECULAR_COLOR");
             remapPropertyFloatOrTexture(description, material, "specularRoughness", "_SPECULAR_ROUGHNESS");
             remapPropertyFloatOrTexture(description, material, "specularIOR", "_SPECULAR_IOR");
             remapPropertyFloatOrTexture(description, material, "specularAnisotropy", "_SPECULAR_ANISOTROPY");
@@ -162,8 +161,9 @@ namespace UnityEditor.Rendering.HighDefinition
             Vector4 vectorProperty;
             TexturePropertyDescription textureProperty;
 
-            Shader shader;
-            shader = AssetDatabase.LoadAssetAtPath<Shader>(shaderPath);
+            context.DependsOnSourceAsset(k_ShaderPath);
+            Shader shader = AssetDatabase.LoadAssetAtPath<Shader>(k_ShaderPath);
+            
             if (shader == null)
                 return;
 
@@ -181,6 +181,13 @@ namespace UnityEditor.Rendering.HighDefinition
             bool hasOpacityMap = description.TryGetProperty("opacity", out opacityMap);
             opacity = Mathf.Min(Mathf.Min(opacityColor.x, opacityColor.y), opacityColor.z);
 
+            float transmission;
+            description.TryGetProperty("transmission", out transmission);
+            if (opacity == 1.0f && !hasOpacityMap)
+            {
+                opacity = 1.0f - transmission;
+            }
+
             if (opacity < 1.0f || hasOpacityMap)
             {
                 if (hasOpacityMap)
@@ -195,7 +202,6 @@ namespace UnityEditor.Rendering.HighDefinition
 
                 material.SetInt("_SrcBlend", 1);
                 material.SetInt("_DstBlend", 10);
-                //material.SetInt("_ZWrite", 1);
                 material.EnableKeyword("_ALPHAPREMULTIPLY_ON");
                 material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
                 material.EnableKeyword("_BLENDMODE_PRESERVE_SPECULAR_LIGHTING");
@@ -225,7 +231,6 @@ namespace UnityEditor.Rendering.HighDefinition
                     vectorProperty.x = Mathf.LinearToGammaSpace(vectorProperty.x);
                     vectorProperty.y = Mathf.LinearToGammaSpace(vectorProperty.y);
                     vectorProperty.z = Mathf.LinearToGammaSpace(vectorProperty.z);
-                    vectorProperty *= floatProperty;
                 }
                 material.SetColor("_BASE_COLOR", vectorProperty * floatProperty);
             }
@@ -237,11 +242,11 @@ namespace UnityEditor.Rendering.HighDefinition
 
             remapPropertyFloatOrTexture3DsMax(description, material, "metalness", "_METALNESS");
 
-            description.TryGetProperty("specular", out float specularFactor);
+            remapPropertyFloat(description, material, "specular", "_SPECULAR_WEIGHT");
 
-            remapPropertyColorOrTexture3DsMax(description, material, "specular_color", "_SPECULAR_COLOR", specularFactor);
+            remapPropertyColorOrTexture3DsMax(description, material, "specular_color", "_SPECULAR_COLOR");
             remapPropertyFloatOrTexture3DsMax(description, material, "specular_roughness", "_SPECULAR_ROUGHNESS");
-            remapPropertyFloatOrTexture3DsMax(description, material, "specular_ior", "_SPECULAR_IOR");
+            remapPropertyFloatOrTexture3DsMax(description, material, "specular_IOR", "_SPECULAR_IOR");
             remapPropertyFloatOrTexture3DsMax(description, material, "specular_anisotropy", "_SPECULAR_ANISOTROPY");
             remapPropertyFloatOrTexture(description, material, "specular_rotation", "_SPECULAR_ROTATION");
 
@@ -250,7 +255,7 @@ namespace UnityEditor.Rendering.HighDefinition
             remapPropertyFloat(description, material, "coat", "_COAT_WEIGHT");
             remapPropertyColorOrTexture3DsMax(description, material, "coat_color", "_COAT_COLOR");
             remapPropertyFloatOrTexture3DsMax(description, material, "coat_roughness", "_COAT_ROUGHNESS");
-            remapPropertyFloatOrTexture3DsMax(description, material, "coat_ior", "_COAT_IOR");
+            remapPropertyFloatOrTexture3DsMax(description, material, "coat_IOR", "_COAT_IOR");
             remapPropertyTexture(description, material, "coat_normal", "_COAT_NORMAL");
         }
 

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -72,6 +72,13 @@ public class FBXArnoldSurfaceMaterialDescriptionPreprocessor : AssetPostprocesso
         bool hasOpacityMap = description.TryGetProperty("opacity", out opacityMap);
         opacity = Mathf.Min(Mathf.Min(opacityColor.x, opacityColor.y), opacityColor.z);
 
+        float transmission;
+        description.TryGetProperty("transmission", out transmission);
+        if (opacity == 1.0f && !hasOpacityMap)
+        {
+            opacity = 1.0f - transmission;
+        }
+
         if (opacity < 1.0f || hasOpacityMap)
         {
             if (hasOpacityMap)
@@ -86,7 +93,6 @@ public class FBXArnoldSurfaceMaterialDescriptionPreprocessor : AssetPostprocesso
 
             material.SetInt("_SrcBlend", 1);
             material.SetInt("_DstBlend", 10);
-            //material.SetInt("_ZWrite", 1);
             material.EnableKeyword("_ALPHAPREMULTIPLY_ON");
             material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
             material.EnableKeyword("_BLENDMODE_PRESERVE_SPECULAR_LIGHTING");
@@ -128,20 +134,13 @@ public class FBXArnoldSurfaceMaterialDescriptionPreprocessor : AssetPostprocesso
 
         remapPropertyFloatOrTexture(description, material, "metalness", "_METALNESS");
 
-        //description.TryGetProperty("specular", out floatProperty);
+        description.TryGetProperty("specular", out floatProperty);
 
-        remapPropertyColorOrTexture(description, material, "specularColor", "_SPECULAR_COLOR");
+        remapPropertyColorOrTexture(description, material, "specularColor", "_SPECULAR_COLOR", floatProperty);
         remapPropertyFloatOrTexture(description, material, "specularRoughness", "_SPECULAR_ROUGHNESS");
         remapPropertyFloatOrTexture(description, material, "specularIOR", "_SPECULAR_IOR");
-        remapPropertyFloatOrTexture(description, material, "specularAnisotropy", "_SPECULAR_ANISOTROPY");
 
         remapPropertyTexture(description, material, "normalCamera", "_NORMAL_MAP");
-
-        remapPropertyFloat(description, material, "coat", "_COAT_WEIGHT");
-        remapPropertyColorOrTexture(description, material, "coatColor", "_COAT_COLOR");
-        remapPropertyFloatOrTexture(description, material, "coatRoughness", "_COAT_ROUGHNESS");
-        remapPropertyFloatOrTexture(description, material, "coatIOR", "_COAT_IOR");
-        remapPropertyTexture(description, material, "coatNormal", "_COAT_NORMAL");
     }
 
 
@@ -191,10 +190,6 @@ public class FBXArnoldSurfaceMaterialDescriptionPreprocessor : AssetPostprocesso
             material.EnableKeyword("_BLENDMODE_ALPHA");
             material.renderQueue = 3000;
         }
-        else
-        {
-            
-        }
 
         description.TryGetProperty("base", out floatProperty);
 
@@ -210,7 +205,6 @@ public class FBXArnoldSurfaceMaterialDescriptionPreprocessor : AssetPostprocesso
                 vectorProperty.x = Mathf.LinearToGammaSpace(vectorProperty.x);
                 vectorProperty.y = Mathf.LinearToGammaSpace(vectorProperty.y);
                 vectorProperty.z = Mathf.LinearToGammaSpace(vectorProperty.z);
-                vectorProperty *= floatProperty;
             }
             material.SetColor("_BASE_COLOR", vectorProperty * floatProperty);
         }
@@ -226,7 +220,7 @@ public class FBXArnoldSurfaceMaterialDescriptionPreprocessor : AssetPostprocesso
 
         remapPropertyColorOrTexture3DsMax(description, material, "specular_color", "_SPECULAR_COLOR", specularFactor);
         remapPropertyFloatOrTexture3DsMax(description, material, "specular_roughness", "_SPECULAR_ROUGHNESS");
-        remapPropertyFloatOrTexture3DsMax(description, material, "specular_ior", "_SPECULAR_IOR");
+        remapPropertyFloatOrTexture3DsMax(description, material, "specular_IOR", "_SPECULAR_IOR");
 
         remapPropertyTexture(description, material, "normal_camera", "_NORMAL_MAP");
 
