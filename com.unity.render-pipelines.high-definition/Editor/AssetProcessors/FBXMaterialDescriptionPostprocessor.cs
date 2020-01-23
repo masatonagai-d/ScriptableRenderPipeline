@@ -2,6 +2,10 @@ using System.IO;
 using UnityEditor.AssetImporters;
 using UnityEditor;
 using UnityEngine;
+using System;
+using System.Reflection;
+using UnityEditor.Experimental.AssetImporters;
+
 namespace UnityEditor.Rendering.HighDefinition
 {
     class FBXMaterialDescriptionPreprocessor : AssetPostprocessor
@@ -25,7 +29,11 @@ namespace UnityEditor.Rendering.HighDefinition
             if (lowerCaseExtension != ".fbx" && lowerCaseExtension != ".obj" && lowerCaseExtension != ".dae" && lowerCaseExtension != ".obj" && lowerCaseExtension != ".blend" && lowerCaseExtension != ".mb" && lowerCaseExtension != ".ma" && lowerCaseExtension != ".max")
                 return;
 
-            context.DependsOnImportedAsset(k_ShaderPath);
+            //context.DependsOnImportedAsset(k_ShaderPath) is internal, use reflection for now..
+            var method = typeof(AssetImportContext).GetMethod("DependsOnImportedAsset", BindingFlags.Instance | BindingFlags.NonPublic, null,
+                CallingConventions.Any, new Type[] { typeof(string) },null);
+
+            method.Invoke(context, new object[] { k_ShaderPath });
             var shader = AssetDatabase.LoadAssetAtPath<Shader>(k_ShaderPath);
 
             if (shader == null)

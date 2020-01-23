@@ -5,12 +5,15 @@ using UnityEditor;
 using UnityEditor.AssetImporters;
 using UnityEngine;
 using UnityEngine.Rendering;
+using System;
+using System.Reflection;
+using UnityEditor.Experimental.AssetImporters;
 
 public class FBXArnoldSurfaceMaterialDescriptionPreprocessor : AssetPostprocessor
 {
     static readonly uint k_Version = 2;
     static readonly int k_Order = 4;
-    static readonly string shaderPath = "Packages/com.unity.render-pipelines.universal/Runtime/Materials/ArnoldStandardSurface.shadergraph";
+    static readonly string k_ShaderPath = "Packages/com.unity.render-pipelines.universal/Runtime/Materials/ArnoldStandardSurface.shadergraph";
     public override uint GetVersion()
     {
         return k_Version;
@@ -53,8 +56,12 @@ public class FBXArnoldSurfaceMaterialDescriptionPreprocessor : AssetPostprocesso
         Vector4 vectorProperty;
         TexturePropertyDescription textureProperty;
 
-        Shader shader;
-        shader = AssetDatabase.LoadAssetAtPath<Shader>(shaderPath);
+        //context.DependsOnImportedAsset(k_ShaderPath) is internal, use reflection for now..
+        var method = typeof(AssetImportContext).GetMethod("DependsOnImportedAsset", BindingFlags.Instance | BindingFlags.NonPublic, null,
+            CallingConventions.Any, new Type[] { typeof(string) }, null);
+
+        method.Invoke(context, new object[] { k_ShaderPath });
+        var shader = AssetDatabase.LoadAssetAtPath<Shader>(k_ShaderPath);
         if (shader == null)
             return;
 
@@ -151,8 +158,12 @@ public class FBXArnoldSurfaceMaterialDescriptionPreprocessor : AssetPostprocesso
         Vector4 vectorProperty;
         TexturePropertyDescription textureProperty;
 
-        Shader shader;
-        shader = AssetDatabase.LoadAssetAtPath<Shader>(shaderPath);
+        //context.DependsOnImportedAsset(k_ShaderPath) is internal, use reflection for now..
+        var method = typeof(AssetImportContext).GetMethod("DependsOnImportedAsset", BindingFlags.Instance | BindingFlags.NonPublic, null,
+            CallingConventions.Any, new Type[] { typeof(string) }, null);
+
+        method.Invoke(context, new object[] { k_ShaderPath });
+        var shader = AssetDatabase.LoadAssetAtPath<Shader>(k_ShaderPath);
         if (shader == null)
             return;
 

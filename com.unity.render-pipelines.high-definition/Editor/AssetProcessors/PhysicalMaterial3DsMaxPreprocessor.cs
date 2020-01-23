@@ -1,6 +1,9 @@
 using UnityEditor.AssetImporters;
 using UnityEditor.Experimental;
 using UnityEngine;
+using System;
+using System.Reflection;
+using UnityEditor.Experimental.AssetImporters;
 
 namespace UnityEditor.Rendering.HighDefinition
 {
@@ -51,7 +54,11 @@ namespace UnityEditor.Rendering.HighDefinition
             TexturePropertyDescription textureProperty;
 
             context.DependsOnCustomDependency("PhysicalMaterialPreprocessor");
-            context.DependsOnImportedAsset(k_ShaderPath);
+            //context.DependsOnImportedAsset(k_ShaderPath) is internal, use reflection for now..
+            var method = typeof(AssetImportContext).GetMethod("DependsOnImportedAsset", BindingFlags.Instance | BindingFlags.NonPublic, null,
+                CallingConventions.Any, new Type[] { typeof(string) }, null);
+
+            method.Invoke(context, new object[] { k_ShaderPath });
             var shader = AssetDatabase.LoadAssetAtPath<Shader>(k_ShaderPath);
             if (shader == null)
                 return;

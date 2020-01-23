@@ -5,6 +5,9 @@ using UnityEditor;
 using UnityEditor.AssetImporters;
 using UnityEngine;
 using UnityEngine.Rendering;
+using System;
+using System.Reflection;
+using UnityEditor.Experimental.AssetImporters;
 
 namespace UnityEditor.Rendering.HighDefinition
 { 
@@ -56,8 +59,13 @@ namespace UnityEditor.Rendering.HighDefinition
             Vector4 vectorProperty;
             TexturePropertyDescription textureProperty;
 
-            Shader shader = AssetDatabase.LoadAssetAtPath<Shader>(k_ShaderPath);
-            context.DependsOnImportedAsset(k_ShaderPath);
+            //context.DependsOnImportedAsset(k_ShaderPath) is internal, use reflection for now..
+            var method = typeof(AssetImportContext).GetMethod("DependsOnImportedAsset", BindingFlags.Instance | BindingFlags.NonPublic, null,
+                CallingConventions.Any, new Type[] { typeof(string) }, null);
+
+            method.Invoke(context, new object[] { k_ShaderPath });
+            var shader = AssetDatabase.LoadAssetAtPath<Shader>(k_ShaderPath);
+
             if (shader == null)
                 return;
 
@@ -161,8 +169,12 @@ namespace UnityEditor.Rendering.HighDefinition
             Vector4 vectorProperty;
             TexturePropertyDescription textureProperty;
 
-            context.DependsOnSourceAsset(k_ShaderPath);
-            Shader shader = AssetDatabase.LoadAssetAtPath<Shader>(k_ShaderPath);
+            //context.DependsOnImportedAsset(k_ShaderPath) is internal, use reflection for now..
+            var method = typeof(AssetImportContext).GetMethod("DependsOnImportedAsset", BindingFlags.Instance | BindingFlags.NonPublic, null,
+                CallingConventions.Any, new Type[] { typeof(string) }, null);
+
+            method.Invoke(context, new object[] { k_ShaderPath });
+            var shader = AssetDatabase.LoadAssetAtPath<Shader>(k_ShaderPath);
             
             if (shader == null)
                 return;
