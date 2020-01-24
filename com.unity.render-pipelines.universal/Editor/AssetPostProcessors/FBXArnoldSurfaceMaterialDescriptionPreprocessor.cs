@@ -152,7 +152,7 @@ public class FBXArnoldSurfaceMaterialDescriptionPreprocessor : AssetPostprocesso
 
 
 
-    static void CreateFrom3DsMaxArnoldStandardSurfaceMaterial(MaterialDescription description, Material material, AnimationClip[] clips)
+    void CreateFrom3DsMaxArnoldStandardSurfaceMaterial(MaterialDescription description, Material material, AnimationClip[] clips)
     {
         float floatProperty;
         Vector4 vectorProperty;
