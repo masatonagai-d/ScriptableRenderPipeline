@@ -1,10 +1,10 @@
-﻿using System.IO;
+using System.IO;
 using UnityEngine;
 using UnityEditor.AssetImporters;
 
 namespace UnityEditor.Rendering.Universal
 {
-    public class SketchupMaterialDescriptionPreprocessor : AssetPostprocessor
+    class SketchupMaterialDescriptionPreprocessor : AssetPostprocessor
     {
         static readonly uint k_Version = 1;
         static readonly int k_Order = 2;

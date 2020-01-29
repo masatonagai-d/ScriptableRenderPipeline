@@ -7,7 +7,7 @@ using UnityEditor.Experimental.AssetImporters;
 
 namespace UnityEditor.Rendering.HighDefinition
 {
-    public class PhysicalMaterial3DsMaxPreprocessor : AssetPostprocessor
+    class PhysicalMaterial3DsMaxPreprocessor : AssetPostprocessor
     {
         [InitializeOnLoadMethod]
         static void ImportOnFileChange()

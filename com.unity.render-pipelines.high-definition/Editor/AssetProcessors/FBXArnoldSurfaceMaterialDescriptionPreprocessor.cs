@@ -11,7 +11,7 @@ using UnityEditor.Experimental.AssetImporters;
 
 namespace UnityEditor.Rendering.HighDefinition
 { 
-    public class FBXArnoldSurfaceMaterialDescriptionPreprocessor : AssetPostprocessor
+    class FBXArnoldSurfaceMaterialDescriptionPreprocessor : AssetPostprocessor
     {
         static readonly uint k_Version = 2;
         static readonly int k_Order = 4;

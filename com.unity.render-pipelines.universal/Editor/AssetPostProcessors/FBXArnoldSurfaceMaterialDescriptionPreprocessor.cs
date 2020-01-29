@@ -9,7 +9,7 @@ using System;
 using System.Reflection;
 using UnityEditor.Experimental.AssetImporters;
 
-public class FBXArnoldSurfaceMaterialDescriptionPreprocessor : AssetPostprocessor
+class FBXArnoldSurfaceMaterialDescriptionPreprocessor : AssetPostprocessor
 {
     static readonly uint k_Version = 2;
     static readonly int k_Order = 4;
