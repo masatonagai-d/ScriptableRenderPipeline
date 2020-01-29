@@ -126,21 +126,6 @@ namespace UnityEditor.ShaderGraph
             }
         }
 
-        [SerializeField]
-        bool m_DOTSInstancing = false;
-        public override ToggleData dotsInstancing
-        {
-            get { return new ToggleData(m_DOTSInstancing); }
-            set
-            {
-                if (m_DOTSInstancing == value.isOn)
-                    return;
-
-                m_DOTSInstancing = value.isOn;
-                Dirty(ModificationScope.Graph);
-            }
-        }
-
         public PBRMasterNode()
         {
             UpdateNodeAfterDeserialization();
@@ -155,7 +140,7 @@ namespace UnityEditor.ShaderGraph
             AddSlot(new NormalMaterialSlot(VertNormalSlotId, NormalName, NormalName, CoordinateSpace.Object, ShaderStageCapability.Vertex));
             AddSlot(new TangentMaterialSlot(VertTangentSlotId, TangentName, TangentName, CoordinateSpace.Object, ShaderStageCapability.Vertex));
             AddSlot(new ColorRGBMaterialSlot(AlbedoSlotId, AlbedoSlotName, AlbedoSlotName, SlotType.Input, Color.grey.gamma, ColorMode.Default, ShaderStageCapability.Fragment));
-            //switch drop off delivery space for normal values   
+            //switch drop off delivery space for normal values
             var coordSpace = CoordinateSpace.Tangent;
             switch (m_NormalDropOffSpace)
             {
