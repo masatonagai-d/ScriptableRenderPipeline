@@ -16,7 +16,7 @@ namespace UnityEditor.ShaderGraph
     {
         const string kDebugSymbol = "SHADERGRAPH_DEBUG";
 
-        public static bool GenerateShaderPass(AbstractMaterialNode masterNode, ShaderPass pass, GenerationMode mode, 
+        public static bool GenerateShaderPass(AbstractMaterialNode masterNode, ShaderPass pass, GenerationMode mode,
             ActiveFields activeFields, ShaderGenerator result, List<string> sourceAssetDependencyPaths,
             List<Dependency[]> dependencies, string resourceClassName, string assemblyName)
         {
@@ -59,7 +59,7 @@ namespace UnityEditor.ShaderGraph
 
             // Get Port references from ShaderPass
             var pixelSlots = FindMaterialSlotsOnNode(pass.pixelPorts, masterNode);
-            var vertexSlots = FindMaterialSlotsOnNode(pass.vertexPorts, masterNode);                     
+            var vertexSlots = FindMaterialSlotsOnNode(pass.vertexPorts, masterNode);
 
             // Function Registry
             var functionBuilder = new ShaderStringBuilder();
@@ -251,13 +251,7 @@ namespace UnityEditor.ShaderGraph
                     instancingOptions.AppendLine("#pragma instancing_options nolightprobe");
                     instancingOptions.AppendLine("#pragma instancing_options nolodfade");
                 }
-                else
-                {
-                    instancingOptions.AppendLine("#pragma instancing_options renderinglayer");
-                    instancingOptions.AppendLine("#pragma multi_compile _ LOD_FADE_CROSSFADE");
-                }
-                    
-                
+
                 if ( instanceCount> 0)
                 {
                     instancingOptions.AppendLine("#if SHADER_TARGET >= 35 && (defined(SHADER_API_D3D11) || defined(SHADER_API_GLES3) || defined(SHADER_API_GLCORE) || defined(SHADER_API_XBOXONE) || defined(SHADER_API_PSSL) || defined(SHADER_API_VULKAN) || defined(SHADER_API_METAL))");
@@ -268,7 +262,7 @@ namespace UnityEditor.ShaderGraph
                     instancingOptions.AppendLine("#endif");
                 }
                 spliceCommands.Add("PassInstancing", instancingOptions.ToCodeBlack());
-                
+
             }
 
             using (var dotsInstancingCode = new ShaderStringBuilder())
@@ -277,13 +271,13 @@ namespace UnityEditor.ShaderGraph
                 {
                     dotsInstancingCode.AppendLine("//-------------------------------------------------------------------------------------");
                     dotsInstancingCode.AppendLine("// Dots Instancing vars");
-                   dotsInstancingCode.AppendLine("//-------------------------------------------------------------------------------------");
+                    dotsInstancingCode.AppendLine("//-------------------------------------------------------------------------------------");
                     dotsInstancingCode.AppendLine("");
 
                     dotsInstancingCode.Append(propertyCollector.GetDotsInstancingPropertiesDeclaration(mode));
                 }
                 spliceCommands.Add("DotsInstancingVars", dotsInstancingCode.ToCodeBlack());
-                
+
             }
 
             using (var pixelBuilder = new ShaderStringBuilder())
@@ -294,7 +288,7 @@ namespace UnityEditor.ShaderGraph
                 pixelBuilder.AppendLines(pixelGraphOutputBuilder.ToString());
                 pixelBuilder.AppendNewLine();
                 pixelBuilder.AppendLines(pixelGraphFunctionBuilder.ToString());
-                
+
                 // Add to splice commands
                 if(pixelBuilder.length == 0)
                     pixelBuilder.AppendLine("// GraphPixel: <None>");
@@ -398,7 +392,7 @@ namespace UnityEditor.ShaderGraph
             // Debug
 
             // Debug output all active fields
-            
+
             using(var debugBuilder = new ShaderStringBuilder())
             {
                 if (isDebug)
@@ -412,7 +406,7 @@ namespace UnityEditor.ShaderGraph
                 }
                 if(debugBuilder.length == 0)
                     debugBuilder.AppendLine("// <None>");
-                
+
                 // Add to splice commands
                 spliceCommands.Add("Debug", debugBuilder.ToCodeBlack());
             }
@@ -425,12 +419,12 @@ namespace UnityEditor.ShaderGraph
 
             if (!File.Exists(templateLocation))
                 return false;
-            
+
             // Get Template preprocessor
             string templatePath = "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Templates";
-            var templatePreprocessor = new ShaderSpliceUtil.TemplatePreprocessor(activeFields, spliceCommands, 
+            var templatePreprocessor = new ShaderSpliceUtil.TemplatePreprocessor(activeFields, spliceCommands,
                 isDebug, templatePath, sourceAssetDependencyPaths, assemblyName, resourceClassName);
-            
+
             // Process Template
             templatePreprocessor.ProcessTemplateFile(templateLocation);
             result.AddShaderChunk(templatePreprocessor.GetShaderCode().ToString(), false);
@@ -454,7 +448,7 @@ namespace UnityEditor.ShaderGraph
             NodeUtils.DepthFirstCollectNodesFromNode(pixelNodes, masterNode, NodeUtils.IncludeSelf.Include, pass.pixelPorts);
         }
 
-        static void GetActiveFieldsAndPermutationsForNodes(AbstractMaterialNode masterNode, ShaderPass pass, 
+        static void GetActiveFieldsAndPermutationsForNodes(AbstractMaterialNode masterNode, ShaderPass pass,
             KeywordCollector keywordCollector,  List<AbstractMaterialNode> vertexNodes, List<AbstractMaterialNode> pixelNodes,
             List<int>[] vertexNodePermutations, List<int>[] pixelNodePermutations,
             ActiveFields activeFields, out ShaderGraphRequirementsPerKeyword graphRequirements)
@@ -515,7 +509,7 @@ namespace UnityEditor.ShaderGraph
                 AddActiveFieldsFromGraphRequirements(activeFields.baseInstance, vertexRequirements.baseInstance.requirements, "VertexDescriptionInputs");
                 AddActiveFieldsFromGraphRequirements(activeFields.baseInstance, pixelRequirements.baseInstance.requirements, "SurfaceDescriptionInputs");
             }
-            
+
             // Build graph requirements
             graphRequirements.UnionWith(pixelRequirements);
             graphRequirements.UnionWith(vertexRequirements);
@@ -679,7 +673,7 @@ namespace UnityEditor.ShaderGraph
                     foreach (var str in pass.StencilOverride)
                         stencilBuilder.AppendLine(str);
                 }
-                
+
                 spliceCommands.Add("Stencil", stencilBuilder.ToCodeBlack());
             }
         }

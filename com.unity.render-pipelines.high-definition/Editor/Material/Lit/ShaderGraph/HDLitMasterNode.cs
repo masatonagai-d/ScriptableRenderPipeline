@@ -690,7 +690,7 @@ namespace UnityEditor.Rendering.HighDefinition
 
         [SerializeField]
         bool m_DOTSInstancing = false;
-        public ToggleData dotsInstancing
+        public override ToggleData dotsInstancing
         {
             get { return new ToggleData(m_DOTSInstancing); }
             set
@@ -830,7 +830,7 @@ namespace UnityEditor.Rendering.HighDefinition
             if (MaterialTypeUsesSlotMask(SlotMask.Normal))
             {
                 RemoveSlot(NormalSlotId);
-                
+
                 var coordSpace = CoordinateSpace.Tangent;
                 switch (m_NormalDropOffSpace)
                 {
