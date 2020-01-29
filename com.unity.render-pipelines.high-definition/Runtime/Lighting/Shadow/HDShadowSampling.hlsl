@@ -309,9 +309,10 @@ float SampleShadow_PCSS(float3 tcs, float2 posSS, float2 scale, float2 offset, f
         shadowSoftness = min(shadowSoftness, resIndepenentMaxSoftness);
     }
 
+    float pen = abs(tcs.z - averageBlockerDepth) * zParams.x;
+    //if (averageBlockerDepth == 1) return 1;
     //2) Penumbra Estimation
-    float filterSize = shadowSoftness * (isPerspective ? PenumbraSizePunctual(tcs.z, averageBlockerDepth) :
-                                                         PenumbraSizeDirectional(tcs.z, averageBlockerDepth));
+    float filterSize = shadowSoftness * (isPerspective ? PenumbraSizePunctual(tcs.z, averageBlockerDepth) : pen);
     filterSize = max(filterSize, minFilterRadius);
     filterSize *= atlasResFactor;
 
