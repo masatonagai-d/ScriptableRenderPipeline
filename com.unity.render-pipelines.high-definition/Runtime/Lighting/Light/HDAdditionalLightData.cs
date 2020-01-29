@@ -1894,10 +1894,10 @@ namespace UnityEngine.Rendering.HighDefinition
                 // We use the light view frustum derived from view projection matrix and angular diameter to work out a filter size in
                 // shadow map space, essentially figuring out the footprint of the cone subtended by the light on the shadow map
                 float halfAngleTan = Mathf.Tan(0.5f * Mathf.Deg2Rad * (softnessScale * m_AngularDiameter) / 2);
-                softness = halfAngleTan * frustumExtentZ / (2.0f * shadowRequest.splitData.cullingSphere.w);
+                softness = Mathf.Abs(halfAngleTan * frustumExtentZ / (2.0f * shadowRequest.splitData.cullingSphere.w));
                 float range = 2.0f * (1.0f / devProj.m22);
                 float rangeScale = Mathf.Abs(range)  / 100.0f;
-                shadowRequest.zBufferParam.x = rangeScale; 
+                shadowRequest.zBufferParam.x = rangeScale;
             }
             else
             {
@@ -1905,9 +1905,10 @@ namespace UnityEngine.Rendering.HighDefinition
                 float x = m_ShapeRadius * softnessScale;
                 float x2 = x * x;
                 softness = 0.02403461f + 3.452916f * x - 1.362672f * x2 + 0.6700115f * x2 * x + 0.2159474f * x2 * x2;
-                softness *= (shadowRequest.atlasViewport.width / 512);  // Make it resolution independent whereas the baseline is 512
                 softness /= 100.0f;
             }
+
+            softness *= (shadowRequest.atlasViewport.width / 512);  // Make it resolution independent whereas the baseline is 512
 
             // Bias
             // This base bias is a good value if we expose a [0..1] since values within [0..5] are empirically shown to be sensible for the slope-scale bias with the width of our PCF.

@@ -98,9 +98,9 @@ real PenumbraSizePunctual(real Reciever, real Blocker)
     return abs((Reciever - Blocker) / Blocker);
 }
 
-real PenumbraSizeDirectional(real Reciever, real Blocker)
+real PenumbraSizeDirectional(real Reciever, real Blocker, real rangeScale)
 {
-    return abs(Reciever - Blocker);
+    return abs(Reciever - Blocker) * rangeScale;
 }
 
 bool BlockerSearch(inout real averageBlockerDepth, inout real numBlockers, real lightArea, real3 coord, real2 sampleJitter, Texture2D shadowMap, SamplerState pointSampler, int sampleCount)
