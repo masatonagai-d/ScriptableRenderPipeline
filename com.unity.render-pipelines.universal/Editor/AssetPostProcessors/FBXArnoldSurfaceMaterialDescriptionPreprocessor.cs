@@ -23,6 +23,12 @@ class FBXArnoldSurfaceMaterialDescriptionPreprocessor : AssetPostprocessor
         return k_Order;
     }
 
+    [CollectImportedDependencies(typeof(ModelImporter), 1)]
+    public static string[] CollectImportedDependenciesForModelImporter(string assetPath)
+    {
+        return new[] { k_ShaderPath };
+    }
+
     static bool IsMayaArnoldStandardSurfaceMaterial(MaterialDescription description)
     {
         float typeId;

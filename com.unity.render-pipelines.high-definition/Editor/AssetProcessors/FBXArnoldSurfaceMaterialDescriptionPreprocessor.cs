@@ -26,6 +26,12 @@ namespace UnityEditor.Rendering.HighDefinition
             return k_Order;
         }
 
+        [CollectImportedDependencies(typeof(ModelImporter), 1)]
+        public static string[] CollectImportedDependenciesForModelImporter(string assetPath)
+        {
+            return new[] { k_ShaderPath };
+        }
+
         static bool IsMayaArnoldStandardSurfaceMaterial(MaterialDescription description)
         {
             float typeId;
@@ -59,11 +65,7 @@ namespace UnityEditor.Rendering.HighDefinition
             Vector4 vectorProperty;
             TexturePropertyDescription textureProperty;
 
-            //context.DependsOnImportedAsset(k_ShaderPath) is internal, use reflection for now..
-            var method = typeof(AssetImportContext).GetMethod("DependsOnImportedAsset", BindingFlags.Instance | BindingFlags.NonPublic, null,
-                CallingConventions.Any, new Type[] { typeof(string) }, null);
-
-            method.Invoke(context, new object[] { k_ShaderPath });
+            
             var shader = AssetDatabase.LoadAssetAtPath<Shader>(k_ShaderPath);
 
             if (shader == null)
@@ -169,11 +171,6 @@ namespace UnityEditor.Rendering.HighDefinition
             Vector4 vectorProperty;
             TexturePropertyDescription textureProperty;
 
-            //context.DependsOnImportedAsset(k_ShaderPath) is internal, use reflection for now..
-            var method = typeof(AssetImportContext).GetMethod("DependsOnImportedAsset", BindingFlags.Instance | BindingFlags.NonPublic, null,
-                CallingConventions.Any, new Type[] { typeof(string) }, null);
-
-            method.Invoke(context, new object[] { k_ShaderPath });
             var shader = AssetDatabase.LoadAssetAtPath<Shader>(k_ShaderPath);
             
             if (shader == null)
